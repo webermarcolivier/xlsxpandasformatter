@@ -104,6 +104,20 @@ formattedWorksheet.format_background_colormap(('B', 'error'), colormap, vmin=0, 
 ## Add a thick border line in between groups of row, as when using Pandas groupby method on column.
 formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
 
+# Apply conditional formatting to dataframe rows in the same manner as
+# Pandas apply method
+def highlight_value_and_sequence_when_value_is_above_threshold(row):
+  
+    formatSeries = [dict() for dummy in range(len(row))]
+
+    if row[('A', 'value')] > 5:
+        formatSeries[0]['font_color'] = '#7c0722'
+        formatSeries[2]['font_color'] = '#7c0722'
+
+    return formatSeries
+
+formattedWorksheet.format_pandas_apply(highlight_value_and_sequence_when_value_is_above_threshold, axis=1)
+
 ## Finally, apply format dictionaries to all cells
 # This has to be called just before the save() call. Any subsequent calls to xlsxwriter methods that modify
 # the format of cells will override format from the FormattedWorksheet class.

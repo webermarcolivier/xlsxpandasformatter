@@ -11,4 +11,7 @@ __pycache__/
 venv/
 ENV/
 
+.~*
+
 test.xlsx
+example.ipynb

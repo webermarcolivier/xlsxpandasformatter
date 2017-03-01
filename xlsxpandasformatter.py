@@ -1,294 +1,112 @@
-import matplotlib.pyplot as plt
-from matplotlib import colors
+from xlsxpandasformatter import FormatedWorksheet
+import seaborn
 import pandas as pd
-import numpy as np
-import re
-from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
-
-
-
-def convert_colormap_to_hex(cmap, x, vmin=0, vmax=1):
-    """
-    Example::
-        >>> seaborn.palplot(seaborn.color_palette("RdBu_r", 7))
-        >>> colorMapRGB = seaborn.color_palette("RdBu_r", 61)
-        >>> colormap = seaborn.blend_palette(colorMapRGB, as_cmap=True, input='rgb')
-        >>> [convert_colormap_to_hex(colormap, x, vmin=-2, vmax=2) for x in range(-2, 3)]
-        ['#09386d', '#72b1d3', '#f7f6f5', '#e7866a', '#730421']
-    """
-    norm = colors.Normalize(vmin, vmax)
-    color_rgb = plt.cm.get_cmap(cmap)(norm(x))
-    color_hex = colors.rgb2hex(color_rgb)
-    return color_hex
-
-
-class FormatedWorksheet:
-    """
-    A FormatedWorksheet is a helper class that wraps the worksheet, workbook and dataframe objects
-    written by pandas to_excel method using the xlsxwriter engine. The FormatedWorksheet class
-    takes care of keeping record of cells format as a table of dictionaries and allowing user to update format of columns, rows
-    and cells.
-
-    See REAMDE.mk for a detailed example.
-    """
-
-    def __init__(self, worksheet, workbook, df, hasIndex, *args, **kwargs):
-        self.worksheet = worksheet
-        self.workbook = workbook
-        self.df = df
-        self.nColLevels = df.columns.nlevels
-        self.nIndexLevels = df.index.nlevels
-        self.hasIndex = hasIndex
 
-        if self.hasIndex:
-            self.nIndexCol = self.nIndexLevels
-        else:
-            self.nIndexCol = 0
+index = pd.MultiIndex.from_product([['bar', 'baz', 'foo'], ['one', 'two']], names=['first', 'second'])
+columns = pd.MultiIndex.from_product([['A', 'B'], ['value', 'error', 'sequence']], names=['colLevel1', 'colLevel2'])
+
+df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
+                   [1.5, 5, 'QWERT', 'a1', 0.2, 'ACTG'],
+                   [5, 8,'ZXCVB', 'b1', 0.4, 'ACTG'],
+                   [9,8,'ZXCVB', 'b1', 0.5, 'ACTG'],
+                   [9,8,'ZXCVB', 'b1', 0.6, 'ACTG'],
+                   [9,8,'ZXCVB', 'b1', 0.8, 'ACTG']],
+                  index=index,
+                  columns=columns)
+df
+
+# In order to change the header format, we have to remove the default formatting of header by pandas
+# See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
+pd.formats.format.header_style = None
+
+# Create a workbook using the Pandas writer with the xlsxwriter engine
+writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter')
+hasIndex = True
+df.to_excel(writer, index=hasIndex, sheet_name='sheet1')
+workbook = writer.book
+worksheet = writer.sheets['sheet1']
+
+# Wrap the worksheet, workbook and dataframe objects into a FormatedWorksheet object
+# which will take care of keeping memory of cells format.
+formattedWorksheet = FormatedWorksheet(worksheet, workbook, df, hasIndex=hasIndex)
+
+### Examples of format methods
+
+## Change header format
+# Note that in order to change the header format, we have to remove the default formatting of header by pandas
+# See above. Alternatively, one can use the default Pandas header format, which works well for multiindex dataframes.
+formattedWorksheet.format_header(headerFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
+                                               'bottom':6, 'left':1, 'right':1}, rowHeight=[30, 20])
+
+## Change index format
+formattedWorksheet.format_index(indexFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
+                                             'right':6, 'bottom':1}, colWidth=15)
+
+## Freeze index, header, or both index and header
+# formattedWorksheet.freeze_header()
+# formattedWorksheet.freeze_index()
+formattedWorksheet.freeze_index_and_header()
+
+## Apply format to column
+# The column can be given either by integer location or by name
+formattedWorksheet.format_col(('B', 'value'), colFormat={'font_size':8})
+formattedWorksheet.format_col(3, colFormat={'align':'center'})
+
+## Apply format to row
+# The row can be given either by integer location or by name
+formattedWorksheet.format_row(('foo', 'one'), rowFormat={'font_size':14})
+formattedWorksheet.format_row(4, rowFormat={'bold':True})
+
+## Apply format and column width to columns.
+# The method format_cols accepts either of following arguments:
+# colWidthList: list of column width, same length as the number of columns of dataframe.
+# colFormatList: list of dictionary-like format, same length as the number of columns of dataframe.
+# colPatternFormatList: list of tuples (pattern, format dictionary). The format will be applied
+# to all columns that match the regex pattern at any of the column levels.
+columnWidthList = [10, 10, 20, 10, 10, 20]
+colPatternFormatList = [(r'[sS]eq', {'font_name':'Courier New'})]
+formattedWorksheet.format_cols(colWidthList=columnWidthList,
+                               colFormatList=None,
+                               colPatternFormatList=colPatternFormatList)
+
+## Apply numeric format to columns
+numFormatScientific = '0.0E+00'
+numFormatFloat2digits = 0x02
+numFormatInteger = 0x01
+# The colPatternFormatList is a list of tuples (pattern, numeric format), where
+# numeric format is either an integer or a string as described here:
+# http://xlsxwriter.readthedocs.io/format.html#set_num_format
+# The format will be applied to all columns that match the regex pattern.
+colPatternFormatList = [
+    (r'error', numFormatScientific)
+]
+formattedWorksheet.format_numeric_cols(colPatternFormatList)
+
+## Apply a colormap background color to column
+colorMapRGB = seaborn.color_palette("RdBu_r", 61)
+colormap = seaborn.blend_palette(colorMapRGB, as_cmap=True, input='rgb')
+formattedWorksheet.format_background_colormap(('B', 'error'), colormap, vmin=0, vmax=1)
+
+## Add a thick border line in between groups of row, as when using Pandas groupby method on column.
+formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
+
+# Apply conditional formatting to dataframe rows in the same manner as
+# Pandas apply method
+def highlight_value_and_sequence_when_value_is_above_threshold(row):
+  
+    formatSeries = [dict() for dummy in range(len(row))]
+
+    if row[('A', 'value')] > 5:
+        formatSeries[0]['font_color'] = '#7c0722'
+        formatSeries[2]['font_color'] = '#7c0722'
+
+    return formatSeries
+
+formattedWorksheet.format_pandas_apply(highlight_value_and_sequence_when_value_is_above_threshold, axis=1)
 
-        self.nHeaderRow = self.nColLevels
-        if self.hasIndex and self.nIndexLevels > 1:
-            # One additional row for multiindex names
-            self.nHeaderRow += 1
+## Finally, apply format dictionaries to all cells
+# This has to be called just before the save() call. Any subsequent calls to xlsxwriter methods that modify
+# the format of cells will override format from the FormattedWorksheet class.
+formattedWorksheet.apply_format_table()
 
-        self.nRows = len(df)
-        self.nCols = len(df.columns)
-
-        # We want to format also multiindex columns, so we convert the non-multiindex columns to tuples
-        self.dfColumns = [None for x in range(self.nCols)]
-        for iCol in range(self.nCols):
-            if type(self.df.columns[iCol]) is not tuple:
-                self.dfColumns[iCol] = (self.df.columns[iCol], )
-            else:
-                self.dfColumns[iCol] = self.df.columns[iCol]
-
-        self.formatTable = [[{} for j in range(self.nCols)] for i in range(self.nRows)]
-        # We use the same format for all header cells at a specific level
-        self.formatTableHeader = [{} for i in range(self.nColLevels)]
-        self.headerRowsHeight = [None for i in range(self.nColLevels)]
-        # We use the same format for all index cells at a specific level
-        self.formatTableIndex = [{} for i in range(self.nIndexLevels)]
-        self.indexColWidth = [None for j in range(self.nIndexLevels)]
-
-
-    def apply_format_table(self):
-        
-        # Apply format to dataframe cells
-        for index, row in self.df.iterrows():
-
-            rowIndex = self.df.index.get_loc(index)
-            iRow, worksheetRow = self.convert_to_row_index(index)
-
-            for iCol in range(self.nCols):
-
-                iCol, worksheetCol = self.convert_to_col_index(iCol)
-                x = row.iloc[iCol]
-                cell = xl_rowcol_to_cell(worksheetRow, worksheetCol)
-                formatDic = self.formatTable[rowIndex][iCol]
-                cellFormat = self.workbook.add_format(formatDic)
-                self.worksheet.write(cell, x, cellFormat)
-
-        # Apply format to header cells
-        for i in range(self.nColLevels):
-            formatDic = self.formatTableHeader[i]
-            cellFormat = self.workbook.add_format(formatDic)
-            self.worksheet.set_row(i, self.headerRowsHeight[i], cellFormat)
-
-        # Apply format to index cells
-        for j in range(self.nIndexLevels):
-            formatDic = self.formatTableIndex[i]
-            cellFormat = self.workbook.add_format(formatDic)
-            self.worksheet.set_column(xl_range(1, j, 1, j), self.indexColWidth[j], cellFormat)
-
-
-    def convert_to_col_index(self, col):
-
-        if self.nColLevels > 1:
-            expectedColType = tuple
-        else:
-            expectedColType = str
-
-        if type(col) is expectedColType:
-            iCol = self.df.columns.get_loc(col)
-        elif type(col) is int:
-            iCol = col
-
-        worksheetCol = iCol + self.nIndexCol
-
-        return iCol, worksheetCol
-
-
-    def convert_to_row_index(self, row):
-
-        if self.nIndexLevels > 1:
-            expectedRowType = tuple
-        else:
-            expectedRowType = str
-
-        if type(row) is expectedRowType:
-            iRow = self.df.index.get_loc(row)
-        elif type(row) is int:
-            iRow = row
-
-        worksheetRow = iRow + self.nHeaderRow
-
-        return iRow, worksheetRow
-
-
-    def format_col(self, col, colWidth=None, colFormat=None):
-
-        iCol, worksheetCol = self.convert_to_col_index(col)
-
-        if colWidth is not None:
-            self.worksheet.set_column(xl_range(1, worksheetCol, 1, worksheetCol), colWidth)
-        if colFormat is not None:
-            for rowIndex in range(self.nRows):
-                self.formatTable[rowIndex][iCol].update(colFormat)
-
-
-    def format_row(self, row, rowHeight=None, rowFormat=None):
-
-        iRow, worksheetRow = self.convert_to_row_index(row)
-
-        if rowHeight is not None:
-            self.worksheet.set_row(worksheetRow, rowHeight)
-        if rowFormat is not None:
-            for iCol in range(self.nCols):
-                self.formatTable[iRow][iCol].update(rowFormat)
-
-
-    def format_cols(self, colWidthList=None, colFormatList=None, colPatternFormatList=None):
-        """
-        colFormatList should be a list of dictionary-like options.
-        colPatternFormatList should a a list of tuples (pattern for column name, dictionary of format options).
-        """
-        
-        if type(colWidthList) is list and len(colWidthList) != self.nCols:
-            print("Warning: length of colWidthList is different from the nb of columns of the dataframe.")
-            return
-        if type(colFormatList) is list and len(colFormatList) != self.nCols:
-            print("Warning: length of colFormatList is different from the nb of columns of the dataframe.")
-            return
-       
-        if type(colWidthList) is list:
-            for iCol in range(self.nCols):
-                colWidth = colWidthList[iCol]
-                self.format_col(iCol, colWidth=colWidth)
-
-        if type(colFormatList) is list:
-            for iCol in range(self.nCols):
-                colFormat = colFormatList[iCol]
-                self.format_col(iCol, colFormat=colFormat)
-
-        if type(colPatternFormatList) is list:
-            for iCol in range(self.nCols):
-                # Apply the format if we find the pattern at any of the multiindex levels of columns
-                for colPattern, formatDic in colPatternFormatList:
-                    if np.any([re.search(colPattern, col) for col in self.dfColumns[iCol]]):
-                        self.format_col(iCol, colFormat=formatDic)
-
-
-    def format_numeric_cols(self, colPatternFormatList):
-        """
-        Formats numeric columns.
-
-        Example::
-            numFormatScientific = 0x0b
-            numFormatFloat2digits = 0x02
-            numFormatInteger = 0x01
-            colPatternFormatList = [
-                (r'(pvalue)', numFormatScientific),
-                (r'(proportion)', '0.0E+00'),
-                (r'([oO]ddsRatio)|(odds ratio)', numFormatFloat2digits),
-                (r'(cterm bias n seq)|(count)', numFormatInteger)
-            ]
-        """
-
-        for iCol in range(self.nCols):
-            # Apply the format if we find the pattern at any of the multiindex levels
-            for colPattern, formatNum in colPatternFormatList:
-                if np.any([re.search(colPattern, col) for col in self.dfColumns[iCol]]):
-                    for rowIndex in range(self.nRows):
-                            self.formatTable[rowIndex][iCol]['num_format'] = formatNum
-
-
-    def format_background_colormap(self, col, colormap, vmin, vmax):
-
-        iCol, worksheetCol = self.convert_to_col_index(col)
-
-        for index, row in self.df.iterrows():
-            x = row.iloc[iCol]
-            if pd.notnull(x):
-                colorHex = convert_colormap_to_hex(colormap, x, vmin=vmin, vmax=vmax)
-                rowIndex = self.df.index.get_loc(index)
-                self.formatTable[rowIndex][iCol]['bg_color'] = colorHex
-
-
-    def format_add_separation_border_between_groups(self, groupCol, borderStyle=2):
-
-        # Finding last rows of grouped dataframe on a multiindex column
-        colDf = pd.DataFrame(self.df[groupCol].rename()).reset_index()
-        lastDf = colDf.reset_index().groupby(by=0).last()
-        dfLastInGroupIndexList = lastDf['index'].tolist()
-        
-        for iRow in dfLastInGroupIndexList:
-            for iCol in range(self.nCols):
-                self.formatTable[iRow][iCol]['bottom'] = borderStyle
-
-
-    def format_header(self, headerFormat=None, rowHeight=None):
-
-        if type(headerFormat) is list:
-            if len(headerFormat) != self.nColLevels:
-                print("ERROR: header format list is not same length as number of column levels.")
-            else:
-                for i, iFormat in enumerate(headerFormat):
-                    self.formatTableHeader[i].update(iFormat)
-        elif type(headerFormat) is dict:
-            for i in range(self.nColLevels):
-                self.formatTableHeader[i].update(headerFormat)
-
-        if type(rowHeight) is list:
-            if len(rowHeight) != self.nColLevels:
-                print("ERROR: header rowHeight list is not same length as number of column levels.")
-            else:
-                for i, height in enumerate(rowHeight):
-                    self.headerRowsHeight[i] = height
-        elif type(rowHeight) is int:
-            height = rowHeight
-            for i in range(self.nColLevels):
-                self.headerRowsHeight[i] = height
-
-
-    def format_index(self, indexFormat=None, colWidth=None):
-
-        if type(indexFormat) is list:
-            if len(indexFormat) != self.nIndexLevels:
-                print("ERROR: index format list is not same length as number of index levels.")
-            else:
-                for i, iFormat in enumerate(indexFormat):
-                    self.formatTableIndex[i].update(iFormat)
-        elif type(indexFormat) is dict:
-            for i in range(self.nIndexLevels):
-                self.formatTableIndex[i].update(indexFormat)
-
-        if type(colWidth) is list:
-            if len(colWidth) != self.nIndexLevels:
-                print("ERROR: index colWidth list is not same length as number of index levels.")
-            else:
-                for i, width in enumerate(colWidth):
-                    self.indexColWidth[i] = width
-        elif type(colWidth) is int:
-            width = colWidth
-            for i in range(self.nIndexLevels):
-                self.indexColWidth[i] = width
-
-
-    def freeze_header(self):
-        self.worksheet.freeze_panes(self.nHeaderRow, 0)
-
-
-    def freeze_index(self):
-        self.worksheet.freeze_panes(0, self.nIndexCol)
-
-    def freeze_index_and_header(self):
-        self.worksheet.freeze_panes(self.nHeaderRow, self.nIndexCol)
+writer.save()
