@@ -2,15 +2,18 @@
 
 Deals with the limitations of formatting when using Pandas dataframe and xlsxwriter to export to Excel format.
 
-Provides a helper class that wraps the worksheet, workbook and dataframe objects written by pandas to_excel method using the xlsxwriter engine to allow consistent formatting of cells.
-
-takes care of keeping record of cells format as a table of dictionaries and allows user to update format of columns, rows and cells.
-
-A FormatedWorksheet is a helper class that wraps the worksheet, workbook and dataframe objects written by pandas to_excel method using the xlsxwriter engine. It takes care of keeping record of cells format and allows user to apply successively formats to columns, rows and cells. It also provides methods to format group of columns based on column name pattern.
+Provides a helper class that wraps the worksheet, workbook and dataframe objects written by pandas to_excel method using the xlsxwriter engine to allow consistent formatting of cells. A FormatedWorksheet is a helper class that wraps the worksheet, workbook and dataframe objects written by pandas to_excel method using the xlsxwriter engine. It takes care of keeping record of cells format and allows user to apply successively formats to columns, rows and cells. It also provides methods to format group of columns based on column name pattern, and apply special separations between groups of rows.
 
 This class is a quick and dirty workaround to the limitations of formatting in xlsxwriter. It was inspired by the other package [XlsxFormatter](https://github.com/Yoyoyoyoyoyoyo/XlsxFormatter). The latter, however, cannot be used in the case of creating xlsxwriter Worksheet through the Pandas `to_excel` method.
 
+## Notes
+
+The FormatedWorksheet class does not handle hierarchical formatting, i.e. single cell formatting with higher priority than column formatting.
+
+## Use case
+
 The general use of the class is described in the following detailed example:
+
 ```python
 from xlsxpandasformatter import FormatedWorksheet
 import seaborn
