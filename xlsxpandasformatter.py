@@ -238,8 +238,8 @@ class FormatedWorksheet:
     def format_add_separation_border_between_groups(self, groupCol, borderStyle=2):
 
         # Finding last rows of grouped dataframe on a multiindex column
-        colDf = pd.DataFrame(self.df[groupCol].rename()).reset_index(drop=True).reset_index()
-        lastDf = colDf.groupby(by=0).last()
+        colDf = pd.DataFrame(self.df[groupCol].copy()).reset_index(drop=True).reset_index()
+        lastDf = colDf.groupby(by=groupCol).last()
         dfLastInGroupIndexList = lastDf['index'].tolist()
         
         for iRow in dfLastInGroupIndexList:
