@@ -22,12 +22,12 @@ def convert_colormap_to_hex(cmap, x, vmin=0, vmax=1):
     return color_hex
 
 
-class FormatedWorksheet:
+class FormattedWorksheet:
     """
-    A FormatedWorksheet is a helper class that wraps the worksheet, workbook and dataframe objects
-    written by pandas to_excel method using the xlsxwriter engine. The FormatedWorksheet class
-    takes care of keeping record of cells format as a table of dictionaries and allowing user to update format of columns, rows
-    and cells.
+    A FormattedWorksheet is a helper class that wraps the worksheet, workbook and dataframe objects 
+    written by pandas to_excel method using the xlsxwriter engine. The FormattedWorksheet class takes care 
+    of keeping a record of cell formats as a table of dictionaries and allows users to update formats of 
+    columns, rows and cells.
 
     See REAMDE.mk for a detailed example.
     """
