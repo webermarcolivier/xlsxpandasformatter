@@ -1,4 +1,4 @@
-from xlsxpandasformatter import FormatedWorksheet
+from xlsxpandasformatter import FormattedWorksheet
 import seaborn
 import pandas as pd
 
@@ -35,7 +35,7 @@ worksheet = writer.sheets['sheet1']
 
 # Wrap the worksheet, workbook and dataframe objects into a FormatedWorksheet object
 # which will take care of keeping memory of cells format.
-formattedWorksheet = FormatedWorksheet(worksheet, workbook, df, hasIndex=hasIndex)
+formattedWorksheet = FormattedWorksheet(worksheet, workbook, df, hasIndex=hasIndex)
 
 ### Examples of format methods
 
