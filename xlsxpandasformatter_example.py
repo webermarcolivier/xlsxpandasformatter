@@ -15,9 +15,16 @@ df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
                   columns=columns)
 df
 
-# In order to change the header format, we have to remove the default formatting of header by pandas
-# See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
-pd.formats.format.header_style = None
+### In order to change the header format, we have to remove the default formatting of header by pandas
+### See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
+##pd.formats.format.header_style = None
+
+# This example does NOT run "as is".  It fails immediately at the line above.  
+# The above stackoverflow posting shows 3 more version changes for `import pandas.io.formats.excel`
+# The following code fixes this error and lets the code run to the next lines
+import pandas.io.formats.excel
+#print(pd.__version__)
+pandas.io.formats.excel.header_style = None
 
 # Create a workbook using the Pandas writer with the xlsxwriter engine
 writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter')
