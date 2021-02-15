@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import re
 from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
-
+import seaborn
 
 
 def convert_colormap_to_hex(cmap, x, vmin=0, vmax=1):
@@ -57,7 +57,7 @@ class FormattedWorksheet:
         self.dfColumns = [None for x in range(self.nCols)]
         for iCol in range(self.nCols):
             if type(self.df.columns[iCol]) is not tuple:
-                self.dfColumns[iCol] = (self.df.columns[iCol], )
+                self.dfColumns[iCol] = (self.df.columns[iCol],)
             else:
                 self.dfColumns[iCol] = self.df.columns[iCol]
 
@@ -69,9 +69,8 @@ class FormattedWorksheet:
         self.formatTableIndex = [{} for i in range(self.nIndexLevels)]
         self.indexColWidth = [None for j in range(self.nIndexLevels)]
 
-
     def apply_format_table(self):
-        
+
         # Apply format to dataframe cells
         for index, row in self.df.iterrows():
 
@@ -79,7 +78,6 @@ class FormattedWorksheet:
             iRow, worksheetRow = self.convert_to_row_index(index)
 
             for iCol in range(self.nCols):
-
                 iCol, worksheetCol = self.convert_to_col_index(iCol)
                 x = row.iloc[iCol]
                 cell = xl_rowcol_to_cell(worksheetRow, worksheetCol)
@@ -99,7 +97,6 @@ class FormattedWorksheet:
             cellFormat = self.workbook.add_format(formatDic)
             self.worksheet.set_column(xl_range(1, j, 1, j), self.indexColWidth[j], cellFormat)
 
-
     def convert_to_col_index(self, col):
 
         if self.nColLevels > 1:
@@ -115,7 +112,6 @@ class FormattedWorksheet:
         worksheetCol = iCol + self.nIndexCol
 
         return iCol, worksheetCol
-
 
     # def convert_to_row_index(self, row):
 
@@ -133,7 +129,6 @@ class FormattedWorksheet:
 
     #     return iRow, worksheetRow
 
-
     def convert_to_row_index(self, row):
 
         if type(row) is int:
@@ -145,7 +140,6 @@ class FormattedWorksheet:
 
         return iRow, worksheetRow
 
-
     def format_col(self, col, colWidth=None, colFormat=None):
 
         iCol, worksheetCol = self.convert_to_col_index(col)
@@ -155,7 +149,6 @@ class FormattedWorksheet:
         if colFormat is not None:
             for rowIndex in range(self.nRows):
                 self.formatTable[rowIndex][iCol].update(colFormat)
-
 
     def format_row(self, row, rowHeight=None, rowFormat=None):
 
@@ -167,20 +160,19 @@ class FormattedWorksheet:
             for iCol in range(self.nCols):
                 self.formatTable[iRow][iCol].update(rowFormat)
 
-
     def format_cols(self, colWidthList=None, colFormatList=None, colPatternFormatList=None):
         """
         colFormatList should be a list of dictionary-like options.
         colPatternFormatList should a a list of tuples (pattern for column name, dictionary of format options).
         """
-        
+
         if type(colWidthList) is list and len(colWidthList) != self.nCols:
             print("Warning: length of colWidthList is different from the nb of columns of the dataframe.")
             return
         if type(colFormatList) is list and len(colFormatList) != self.nCols:
             print("Warning: length of colFormatList is different from the nb of columns of the dataframe.")
             return
-       
+
         if type(colWidthList) is list:
             for iCol in range(self.nCols):
                 colWidth = colWidthList[iCol]
@@ -197,7 +189,6 @@ class FormattedWorksheet:
                 for colPattern, formatDic in colPatternFormatList:
                     if np.any([re.search(colPattern, col) for col in self.dfColumns[iCol]]):
                         self.format_col(iCol, colFormat=formatDic)
-
 
     def format_numeric_cols(self, colPatternFormatList):
         """
@@ -220,8 +211,7 @@ class FormattedWorksheet:
             for colPattern, formatNum in colPatternFormatList:
                 if np.any([re.search(colPattern, col) for col in self.dfColumns[iCol]]):
                     for rowIndex in range(self.nRows):
-                            self.formatTable[rowIndex][iCol]['num_format'] = formatNum
-
+                        self.formatTable[rowIndex][iCol]['num_format'] = formatNum
 
     def format_background_colormap(self, col, colormap, vmin, vmax):
 
@@ -234,18 +224,16 @@ class FormattedWorksheet:
                 rowIndex = self.df.index.get_loc(index)
                 self.formatTable[rowIndex][iCol]['bg_color'] = colorHex
 
-
     def format_add_separation_border_between_groups(self, groupCol, borderStyle=2):
 
         # Finding last rows of grouped dataframe on a multiindex column
         colDf = pd.DataFrame(self.df[groupCol].copy()).reset_index(drop=True).reset_index()
         lastDf = colDf.groupby(by=groupCol).last()
         dfLastInGroupIndexList = lastDf['index'].tolist()
-        
+
         for iRow in dfLastInGroupIndexList:
             for iCol in range(self.nCols):
                 self.formatTable[iRow][iCol]['bottom'] = borderStyle
-
 
     def format_header(self, headerFormat=None, rowHeight=None):
 
@@ -270,7 +258,6 @@ class FormattedWorksheet:
             for i in range(self.nColLevels):
                 self.headerRowsHeight[i] = height
 
-
     def format_index(self, indexFormat=None, colWidth=None):
 
         if type(indexFormat) is list:
@@ -294,7 +281,6 @@ class FormattedWorksheet:
             for i in range(self.nIndexLevels):
                 self.indexColWidth[i] = width
 
-
     def format_pandas_map(self, func, col):
         """
         Applies a conditional formatting to cells, using Pandas map method on dataframe column.
@@ -309,7 +295,6 @@ class FormattedWorksheet:
         for index, formatDic in formatSeries.iteritems():
             iRow = self.df.index.get_loc(index)
             self.formatTable[iRow][iCol].update(formatDic)
-
 
     def format_pandas_apply(self, func, axis=1):
         """
@@ -329,10 +314,8 @@ class FormattedWorksheet:
             for j in range(len(formatDf.columns)):
                 self.formatTable[i][j].update(formatDf.iloc[i, j])
 
-
     def freeze_header(self):
         self.worksheet.freeze_panes(self.nHeaderRow, 0)
-
 
     def freeze_index(self):
         self.worksheet.freeze_panes(0, self.nIndexCol)

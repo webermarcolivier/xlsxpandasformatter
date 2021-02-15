@@ -10,6 +10,12 @@ This class is a quick and dirty workaround to the limitations of formatting in x
 
 The FormatedWorksheet class does not handle hierarchical formatting, i.e. single cell formatting with higher priority than column formatting.
 
+
+## Installation
+```shell
+pip3 install XlsxPandasFormatter
+```
+
 ## Use case
 
 The general use of the class is described in the following detailed example:
@@ -30,7 +36,7 @@ df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
                    [9,8,'ZXCVB', 'b1', 0.8, 'ACTG']],
                   index=index,
                   columns=columns)
-df
+
 
 # In order to change the header format, we have to remove the default formatting of header by pandas
 # See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
@@ -131,4 +137,4 @@ writer.save()
 ```
 
 Output:
-![xlsxpandasformatter_example.png](xlsxpandasformatter_example.png)
+![example.png](example.png)
