@@ -7,13 +7,12 @@ columns = pd.MultiIndex.from_product([['A', 'B'], ['value', 'error', 'sequence']
 
 df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
                    [1.5, 5, 'QWERT', 'a1', 0.2, 'ACTG'],
-                   [5, 8,'ZXCVB', 'b1', 0.4, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.5, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.6, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.8, 'ACTG']],
+                   [5, 8, 'ZXCVB', 'b1', 0.4, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.5, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.6, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.8, 'ACTG']],
                   index=index,
                   columns=columns)
-df
 
 ### In order to change the header format, we have to remove the default formatting of header by pandas
 ### See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
@@ -23,7 +22,8 @@ df
 # The above stackoverflow posting shows 3 more version changes for `import pandas.io.formats.excel`
 # The following code fixes this error and lets the code run to the next lines
 import pandas.io.formats.excel
-#print(pd.__version__)
+
+# print(pd.__version__)
 pandas.io.formats.excel.header_style = None
 
 # Create a workbook using the Pandas writer with the xlsxwriter engine
@@ -42,12 +42,12 @@ formattedWorksheet = FormattedWorksheet(worksheet, workbook, df, hasIndex=hasInd
 ## Change header format
 # Note that in order to change the header format, we have to remove the default formatting of header by pandas
 # See above. Alternatively, one can use the default Pandas header format, which works well for multiindex dataframes.
-formattedWorksheet.format_header(headerFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
-                                               'bottom':6, 'left':1, 'right':1}, rowHeight=[30, 20])
+formattedWorksheet.format_header(headerFormat={'font_name': 'Times New Roman', 'align': 'center', 'bold': True,
+                                               'bottom': 6, 'left': 1, 'right': 1}, rowHeight=[30, 20])
 
 ## Change index format
-formattedWorksheet.format_index(indexFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
-                                             'right':6, 'bottom':1}, colWidth=15)
+formattedWorksheet.format_index(indexFormat={'font_name': 'Times New Roman', 'align': 'center', 'bold': True,
+                                             'right': 6, 'bottom': 1}, colWidth=15)
 
 ## Freeze index, header, or both index and header
 # formattedWorksheet.freeze_header()
@@ -56,13 +56,13 @@ formattedWorksheet.freeze_index_and_header()
 
 ## Apply format to column
 # The column can be given either by integer location or by name
-formattedWorksheet.format_col(('B', 'value'), colFormat={'font_size':8})
-formattedWorksheet.format_col(3, colFormat={'align':'center'})
+formattedWorksheet.format_col(('B', 'value'), colFormat={'font_size': 8})
+formattedWorksheet.format_col(3, colFormat={'align': 'center'})
 
 ## Apply format to row
 # The row can be given either by integer location or by name
-formattedWorksheet.format_row(('foo', 'one'), rowFormat={'font_size':14})
-formattedWorksheet.format_row(4, rowFormat={'bold':True})
+formattedWorksheet.format_row(('foo', 'one'), rowFormat={'font_size': 14})
+formattedWorksheet.format_row(4, rowFormat={'bold': True})
 
 ## Apply format and column width to columns.
 # The method format_cols accepts either of following arguments:
@@ -71,7 +71,7 @@ formattedWorksheet.format_row(4, rowFormat={'bold':True})
 # colPatternFormatList: list of tuples (pattern, format dictionary). The format will be applied
 # to all columns that match the regex pattern at any of the column levels.
 columnWidthList = [10, 10, 20, 10, 10, 20]
-colPatternFormatList = [(r'[sS]eq', {'font_name':'Courier New'})]
+colPatternFormatList = [(r'[sS]eq', {'font_name': 'Courier New'})]
 formattedWorksheet.format_cols(colWidthList=columnWidthList,
                                colFormatList=None,
                                colPatternFormatList=colPatternFormatList)
@@ -97,10 +97,10 @@ formattedWorksheet.format_background_colormap(('B', 'error'), colormap, vmin=0, 
 ## Add a thick border line in between groups of row, as when using Pandas groupby method on column.
 formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
 
+
 # Apply conditional formatting to dataframe rows in the same manner as
 # Pandas apply method
 def highlight_value_and_sequence_when_value_is_above_threshold(row):
-  
     formatSeries = [dict() for dummy in range(len(row))]
 
     if row[('A', 'value')] > 5:
@@ -108,6 +108,7 @@ def highlight_value_and_sequence_when_value_is_above_threshold(row):
         formatSeries[2]['font_color'] = '#0e4179'
 
     return formatSeries
+
 
 formattedWorksheet.format_pandas_apply(highlight_value_and_sequence_when_value_is_above_threshold, axis=1)
 

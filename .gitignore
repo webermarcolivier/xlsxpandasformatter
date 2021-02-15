@@ -15,3 +15,8 @@ ENV/
 
 test.xlsx
 example.ipynb
+
+.idea/
+build/
+dist/
+*.egg-info/
