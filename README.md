@@ -21,7 +21,7 @@ pip3 install XlsxPandasFormatter
 The general use of the class is described in the following detailed example:
 
 ```python
-from xlsxpandasformatter import FormatedWorksheet
+from xlsxpandasformatter import FormattedWorksheet
 import seaborn
 import pandas as pd
 
