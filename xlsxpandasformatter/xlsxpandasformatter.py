@@ -3,7 +3,7 @@ from matplotlib import colors
 import pandas as pd
 import numpy as np
 import re
-from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
+from xlsxwriter.utility import xl_rowcol_to_cell
 import seaborn
 
 
@@ -95,7 +95,7 @@ class FormattedWorksheet:
         for j in range(self.nIndexLevels):
             formatDic = self.formatTableIndex[i]
             cellFormat = self.workbook.add_format(formatDic)
-            self.worksheet.set_column(xl_range(1, j, 1, j), self.indexColWidth[j], cellFormat)
+            self.worksheet.set_column(j, j, self.indexColWidth[j], cellFormat)
 
     def convert_to_col_index(self, col):
 
@@ -145,7 +145,7 @@ class FormattedWorksheet:
         iCol, worksheetCol = self.convert_to_col_index(col)
 
         if colWidth is not None:
-            self.worksheet.set_column(xl_range(1, worksheetCol, 1, worksheetCol), colWidth)
+            self.worksheet.set_column(worksheetCol, worksheetCol, colWidth)
         if colFormat is not None:
             for rowIndex in range(self.nRows):
                 self.formatTable[rowIndex][iCol].update(colFormat)
