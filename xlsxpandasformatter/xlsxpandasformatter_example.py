@@ -94,11 +94,11 @@ formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
 # Apply conditional formatting to dataframe rows in the same manner as
 # Pandas apply method
 def highlight_value_and_sequence_when_value_is_above_threshold(row):
-    formatSeries = [dict() for dummy in range(len(row))]
+    formatSeries = pd.Series(data=[dict() for _ in range(len(row))], index=row.index)
 
     if row[('A', 'value')] > 5:
-        formatSeries[0]['font_color'] = '#0e4179'
-        formatSeries[2]['font_color'] = '#0e4179'
+        formatSeries.iloc[0]['font_color'] = '#7c0722'
+        formatSeries.iloc[2]['font_color'] = '#7c0722'
 
     return formatSeries
 
