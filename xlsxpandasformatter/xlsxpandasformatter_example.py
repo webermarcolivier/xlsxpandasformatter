@@ -1,6 +1,7 @@
 from xlsxpandasformatter import FormattedWorksheet
 import seaborn
 import pandas as pd
+import pandas.io.formats.excel
 
 index = pd.MultiIndex.from_product([['bar', 'baz', 'foo'], ['one', 'two']], names=['first', 'second'])
 columns = pd.MultiIndex.from_product([['A', 'B'], ['value', 'error', 'sequence']], names=['colLevel1', 'colLevel2'])
@@ -14,16 +15,8 @@ df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
                   index=index,
                   columns=columns)
 
-### In order to change the header format, we have to remove the default formatting of header by pandas
-### See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
-##pd.formats.format.header_style = None
-
-# This example does NOT run "as is".  It fails immediately at the line above.  
-# The above stackoverflow posting shows 3 more version changes for `import pandas.io.formats.excel`
-# The following code fixes this error and lets the code run to the next lines
-import pandas.io.formats.excel
-
-# print(pd.__version__)
+# In order to change the header format, we have to remove the default formatting of header by pandas
+# See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
 pandas.io.formats.excel.header_style = None
 
 # Create a workbook using the Pandas writer with the xlsxwriter engine
@@ -97,18 +90,16 @@ formattedWorksheet.format_background_colormap(('B', 'error'), colormap, vmin=0, 
 ## Add a thick border line in between groups of row, as when using Pandas groupby method on column.
 formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
 
-
 # Apply conditional formatting to dataframe rows in the same manner as
 # Pandas apply method
 def highlight_value_and_sequence_when_value_is_above_threshold(row):
-    formatSeries = [dict() for dummy in range(len(row))]
+    formatSeries = pd.Series(data=[dict() for _ in range(len(row))], index=row.index)
 
     if row[('A', 'value')] > 5:
-        formatSeries[0]['font_color'] = '#0e4179'
-        formatSeries[2]['font_color'] = '#0e4179'
+        formatSeries.iloc[0]['font_color'] = '#7c0722'
+        formatSeries.iloc[2]['font_color'] = '#7c0722'
 
     return formatSeries
-
 
 formattedWorksheet.format_pandas_apply(highlight_value_and_sequence_when_value_is_above_threshold, axis=1)
 
