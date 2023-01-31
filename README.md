@@ -58,12 +58,12 @@ formattedWorksheet = FormattedWorksheet(worksheet, workbook, df, hasIndex=hasInd
 ## Change header format
 # Note that in order to change the header format, we have to remove the default formatting of header by pandas
 # See above. Alternatively, one can use the default Pandas header format, which works well for multiindex dataframes.
-formattedWorksheet.format_header(headerFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
-                                               'bottom':6, 'left':1, 'right':1}, rowHeight=[30, 20])
+formattedWorksheet.format_header(headerFormat={'font_name': 'Times New Roman', 'align': 'center', 'bold': True,
+                                               'bottom': 6, 'left': 1, 'right': 1}, rowHeight=[30, 20])
 
 ## Change index format
-formattedWorksheet.format_index(indexFormat={'font_name':'Times New Roman', 'align':'center', 'bold':True,
-                                             'right':6, 'bottom':1}, colWidth=15)
+formattedWorksheet.format_index(indexFormat={'font_name': 'Times New Roman', 'align': 'center', 'bold': True,
+                                             'right': 6, 'bottom': 1}, colWidth=15)
 
 ## Freeze index, header, or both index and header
 # formattedWorksheet.freeze_header()
@@ -72,13 +72,13 @@ formattedWorksheet.freeze_index_and_header()
 
 ## Apply format to column
 # The column can be given either by integer location or by name
-formattedWorksheet.format_col(('B', 'value'), colFormat={'font_size':8})
-formattedWorksheet.format_col(3, colFormat={'align':'center'})
+formattedWorksheet.format_col(('B', 'value'), colFormat={'font_size': 8})
+formattedWorksheet.format_col(3, colFormat={'align': 'center'})
 
 ## Apply format to row
 # The row can be given either by integer location or by name
-formattedWorksheet.format_row(('foo', 'one'), rowFormat={'font_size':14})
-formattedWorksheet.format_row(4, rowFormat={'bold':True})
+formattedWorksheet.format_row(('foo', 'one'), rowFormat={'font_size': 14})
+formattedWorksheet.format_row(4, rowFormat={'bold': True})
 
 ## Apply format and column width to columns.
 # The method format_cols accepts either of following arguments:
@@ -87,7 +87,7 @@ formattedWorksheet.format_row(4, rowFormat={'bold':True})
 # colPatternFormatList: list of tuples (pattern, format dictionary). The format will be applied
 # to all columns that match the regex pattern at any of the column levels.
 columnWidthList = [10, 10, 20, 10, 10, 20]
-colPatternFormatList = [(r'[sS]eq', {'font_name':'Courier New'})]
+colPatternFormatList = [(r'[sS]eq', {'font_name': 'Courier New'})]
 formattedWorksheet.format_cols(colWidthList=columnWidthList,
                                colFormatList=None,
                                colPatternFormatList=colPatternFormatList)
@@ -116,7 +116,6 @@ formattedWorksheet.format_add_separation_border_between_groups(('B', 'value'))
 # Apply conditional formatting to dataframe rows in the same manner as
 # Pandas apply method
 def highlight_value_and_sequence_when_value_is_above_threshold(row):
-  
     formatSeries = pd.Series(data=[dict() for _ in range(len(row))], index=row.index)
 
     if row[('A', 'value')] > 5:
