@@ -24,23 +24,23 @@ The general use of the class is described in the following detailed example:
 from xlsxpandasformatter import FormattedWorksheet
 import seaborn
 import pandas as pd
+import pandas.io.formats.excel
 
 index = pd.MultiIndex.from_product([['bar', 'baz', 'foo'], ['one', 'two']], names=['first', 'second'])
 columns = pd.MultiIndex.from_product([['A', 'B'], ['value', 'error', 'sequence']], names=['colLevel1', 'colLevel2'])
 
 df = pd.DataFrame([[0.2, 1, 'ASDFG', 'a1', 0.1, 'ACTG'],
                    [1.5, 5, 'QWERT', 'a1', 0.2, 'ACTG'],
-                   [5, 8,'ZXCVB', 'b1', 0.4, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.5, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.6, 'ACTG'],
-                   [9,8,'ZXCVB', 'b1', 0.8, 'ACTG']],
+                   [5, 8, 'ZXCVB', 'b1', 0.4, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.5, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.6, 'ACTG'],
+                   [9, 8, 'ZXCVB', 'b1', 0.8, 'ACTG']],
                   index=index,
                   columns=columns)
 
-
 # In order to change the header format, we have to remove the default formatting of header by pandas
 # See http://stackoverflow.com/questions/36694313/pandas-xlsxwriter-format-header
-pd.formats.format.header_style = None
+pandas.io.formats.excel.header_style = None
 
 # Create a workbook using the Pandas writer with the xlsxwriter engine
 writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter')
